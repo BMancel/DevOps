@@ -220,10 +220,7 @@ If everything works correctly :
 
 ![image](https://github.com/BMancel/DevOps/assets/150273847/746bb073-1f61-4a9b-be01-fcb7d4a73533)
 
-
-################################
-Describe docker-compose.yml file
-################################
+The docker-compose.yml file builds the images and containers of the 3-tiers application, the backend, the database and the http server. We address a common network to each tier so that the different parties can communicate with each other and we provide them with a common volume to recover data if the containers are deleted. the 'depends_on' condition allows to create the three parties in the correct order: first the database, then the backend and finally the http server. Finally, container_name allows to name containers to make them easier to find on Docker Desktop.
 
 #### **Publish**
 
