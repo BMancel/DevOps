@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+    backend:
+        build:
+            context: ./backend
+        networks:
+            - my-network
+        depends_on:
+            - database
+        container_name : backend-container
+
+    database:
+        build:
+            context: ./database
+        networks:
+            - my-network
+        volumes:
+            - my_volume:/var/lib/postgresql/data
+        container_name : database-container
+
+    httpd:
+        build:
+            context: ./frontend
+        ports:
+            - "80:80"
+        networks:
+            - my-network
+        depends_on:
+            - backend
+        container_name : frontend-container
+
+networks:
+    my-network:
+
+volumes:
+    my_volume:
