@@ -99,9 +99,11 @@ Visualization of a table from the mypostgres container on port 8090 using the ad
 
 #### **Backend API**
 
-For the Backend, we have the dockerfile :
+### 1-2 Why do we need a multistage build? And explain each step of this dockerfile.
 
 We use a multistage build: A multistage build allows us to use only what is necessary, and therefore to reduce the size of the image. In addition to saving space, a lightweight image deploys more quickly.
+
+For the Backend, we have the dockerfile :
 
 ```
 # Build
@@ -220,9 +222,13 @@ If everything works correctly :
 
 ![image](https://github.com/BMancel/DevOps/assets/150273847/746bb073-1f61-4a9b-be01-fcb7d4a73533)
 
+### 1-3 Document docker-compose most important commands. 1-4 Document your docker-compose file.
+
 The docker-compose.yml file builds the images and containers of the 3-tiers application, the backend, the database and the http server. We address a common network to each tier so that the different parties can communicate with each other and we provide them with a common volume to recover data if the containers are deleted. the 'depends_on' condition allows to create the three parties in the correct order: first the database, then the backend and finally the http server. Finally, container_name allows to name containers to make them easier to find on Docker Desktop.
 
 #### **Publish**
+
+### 1-5 Document your publication commands and published images in dockerhub.
 
 Connection to the docker hub with the command :
 
@@ -275,6 +281,9 @@ Inside the pom.xml file of the backend folder, we can see the following dependen
 </dependency>
 <dependency>
 ```
+
+### 2-1 What are testcontainers ?
+
 Testcontainers is a Java library that simplifies the process of creating and managing containerized environments for testing purposes. It allows developers to run their tests with dependencies like databases, message queues, web servers, and other services in isolated Docker containers. This ensures that the tests are reproducible, reliable, and do not interfere with the local development environment.
 
 Architecture of the pipeline (in the main.yml file, in worklows) :
@@ -309,6 +318,7 @@ jobs:
 
 ![image](https://github.com/BMancel/DevOps/assets/150273847/1167d497-87b4-4e84-bb07-ee32e462c867)
 
+### 2-2 Document your Github Actions configurations.
 
 The workflow is triggered when I push or pull on my repo. It runs backend tests on an Ubuntu environment consisting of 3 steps: 
 It starts by retrieving the source code from the Github repo, 
@@ -399,6 +409,7 @@ jobs:
 
 ![image](https://github.com/BMancel/DevOps/assets/150273847/07640d1d-17a1-4173-83e4-108a961f8e18)
 
+### 2.3 Document your quality gate configuration.
 
 quality gate : 
 
