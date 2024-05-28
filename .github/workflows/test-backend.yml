@@ -1,0 +1,21 @@
+name: Test Backend
+ 
+on:
+  push:
+    branches:
+      - main
+      - develop
+ 
+jobs:
+  test-backend:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2.5.0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+ 
+      - name: Build and test with Maven
+        run: mvn clean -B verify sonar:sonar -Dsonar.projectKey=bmancel_mancel-benjamin -Dsonar.organization=bmancel -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}  -f ./docker_compose/backend/pom.xml
