@@ -21,14 +21,14 @@ services:
 
     httpd:
         build:
-            context: ./frontend
+            context: ./server
         ports:
             - "80:80"
         networks:
             - my-network
         depends_on:
             - backend
-        container_name : frontend-container
+        container_name : server-container
 
 networks:
     my-network:

@@ -32,9 +32,9 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-database:latest
  
-      - name: Build and push frontend image
+      - name: Build and push server image
         uses: docker/build-push-action@v2
         with:
-          context: ./docker_compose/frontend
+          context: ./docker_compose/server
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-httpd:latest

@@ -190,14 +190,14 @@ services:
 
     httpd:
         build:
-            context: ./frontend
+            context: ./server
         ports:
             - "80:80"
         networks:
             - my-network
         depends_on:
             - backend
-        container_name : frontend-container
+        container_name : server-container
 
 networks:
     my-network:
@@ -402,7 +402,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           # relative path to the place where source code with Dockerfile is located
-          context: ./docker_compose/frontend
+          context: ./docker_compose/server
           # Note: tags has to be all lower-case
           tags:  ${{secrets.DOCKERHUB_USERNAME}}/my-httpd:latest 
 ```
@@ -496,10 +496,10 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-database:latest
  
-      - name: Build and push frontend image
+      - name: Build and push server image
         uses: docker/build-push-action@v2
         with:
-          context: ./docker_compose/frontend
+          context: ./docker_compose/server
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-database:latest
 ```
