@@ -29,6 +29,17 @@ services:
         depends_on:
             - backend
         container_name : server-container
+    
+    frontend:
+        build:
+            context: ./devops-front-main
+        ports:
+            - "8080:80"
+        networks:
+            - my-network
+        depends_on:
+            - httpd
+        container_name : frontend-container
 
 networks:
     my-network:
