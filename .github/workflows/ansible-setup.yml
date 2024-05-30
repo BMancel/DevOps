@@ -18,11 +18,5 @@ jobs:
       - name: Install Ansible
         run: sudo apt install -y ansible
 
-      - name: Go to the correct directory
-        run: cd repo/Ansible
-
       - name: Run playbook
-        run: ansible-playbook -i inventories/setup.yml playbook.yml
-
-      - name: SSH connection
-        run: ssh -i ${{ secrets.ANSIBLE_KEY }} centos@benjamin.mancel.takima.cloud
+        run: ansible-playbook -i Ansible/inventories/setup.yml playbook.yml
