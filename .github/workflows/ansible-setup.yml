@@ -1,4 +1,4 @@
-name: Ansible Setup
+name: Deployment
  
 on:
   workflow_run:
@@ -28,5 +28,3 @@ jobs:
 
       - name: Run playbook
         run: ansible-playbook -i Ansible/inventories/setup.yml Ansible/playbook.yml
-        env:
-          ANSIBLE_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
