@@ -507,5 +507,364 @@ jobs:
 ![image](https://github.com/BMancel/DevOps/assets/150273847/be964b3a-876a-4d1f-a7eb-fbd1e8ee749d)
 
 
+## TP3 - Ansible
+
+### 3-1 Document your inventory and base commands
+
+we configure Ansible with this information :
+
+```
+all:
+ vars:
+   ansible_user: centos
+   ansible_ssh_private_key_file: /path/to/private/key
+ children:
+   prod:
+     hosts: hostname or IP
+```
+
+We test the configuration with a ping: if the connection is established, it returns “pong”
+
+```
+ansible all -i inventories/setup.yml -m ping
+```
+
+The connection is well established :
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/cf81ddaa-128e-4204-a264-23a594819fa9)
+
+We retrieve information about the hosts, more precisely information about the distribution of the operating system:
+
+```
+ansible all -i inventories/setup.yml -m setup -a "filter=ansible_distribution*"
+```
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/ad45b931-42d1-4f14-8cfd-7e47790a3fed)
+
+Finally, we delete the Apache httpd server (created in the TD), to keep only the one that interests us.
+
+```
+ansible all -i inventories/setup.yml -m yum -a "name=httpd state=absent" --become
+
+```
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/7a0f9cb8-6221-4df2-bbb4-dd79e06c1ef6)
+
+### **Playbooks**
+
+We start by creating a simple playbook : 
+
+```
+- hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+   - name: Test connection
+     ping:
+```
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/dcb0d280-2eb2-45f4-9c6c-6a23977a52d9)
+
+We modify the playbook to install Docker on the server :
+
+```
+- name: Install device-mapper-persistent-data
+  yum:
+    name: device-mapper-persistent-data
+    state: latest
+
+- name: Install lvm2
+  yum:
+    name: lvm2
+    state: latest
+
+- name: add repo docker
+  command:
+    cmd: sudo yum-config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: Install Docker
+  yum:
+    name: docker-ce
+    state: present
+
+- name: Install python3
+  yum:
+    name: python3
+    state: present
+
+- name: Install docker with Python 3
+  pip:
+    name: docker
+    executable: pip3
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Make sure Docker is running
+  service: name=docker state=started
+  tags: docker
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/40ce2781-3719-41b1-99dc-b1e1d77dbbe6)
+
+We can check that Docker is installed by asking for its version :
+
+```
+ansible all -m shell -a "docker --version" -i inventories
+```
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/0591f901-a47b-4281-949a-58cc43b65099)
+
+From now, we will work with roles, to organize the playbook. We start by creating the roles necessary for our application :
+
+```
+ansible-galaxy init roles/docker
+```
+
+### 3-2 Document your playbook
+
+Here, our playbook just tells us to execute the instructions found in the docker role :
+
+```
+- hosts: all
+  gather_facts: false
+  become: true
+  roles:
+  - docker
+```
+
+And inside the docker role, we ask it to install Docker (and connect to Docker Hub) :
+
+```
+- name: Install device-mapper-persistent-data
+  yum:
+    name: device-mapper-persistent-data
+    state: latest
+
+- name: Install lvm2
+  yum:
+    name: lvm2
+    state: latest
+
+- name: add repo docker
+  command:
+    cmd: sudo yum-config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: Install Docker
+  yum:
+    name: docker-ce
+    state: present
+
+- name: Install python3
+  yum:
+    name: python3
+    state: present
+
+- name: Install docker with Python 3
+  pip:
+    name: docker
+    executable: pip3
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Make sure Docker is running
+  service: name=docker state=started
+  tags: docker
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Log in to Docker Hub
+  docker_login:
+    username: unptitcurieux
+    password: CometE57970
+    reauthorize: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+### **Deploy the App**
+
+We need to configure a role for each important part of our application. In addition to the docker role, we add the following :
+
+- nework
+```
+ansible-galaxy init roles/network
+```
+- database
+```
+ansible-galaxy init roles/databse
+```
+- app (our API)
+```
+ansible-galaxy init roles/app
+```
+- proxy (httpd server)
+```
+ansible-galaxy init roles/proxy
+```
+
+### 3-3 Document your docker_container tasks configuration 
+
+Now our playbook looks like this :
+```
+- hosts: all
+  gather_facts: false
+  become: true
+  roles:
+  - docker
+  - network
+  - database
+  - app
+  - proxy
+```
+
+And inside the different roles :
+
+- network
+```
+- name: Create a network
+  community.docker.docker_network:
+    name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+- database
+```
+- name: Pull the database image
+  docker_image:
+    name: unptitcurieux/my-database
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+ 
+- name: Run the database
+  docker_container:
+    name: database-container
+    image: unptitcurieux/my-database
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+- app
+```
+- name: Pull the backend image
+  docker_image:
+    name: unptitcurieux/my-backend
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Run the backend
+  docker_container:
+    name: backend-container
+    image: unptitcurieux/my-backend
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+- proxy
+```
+- name: Pull the proxy image
+  docker_image:
+    name: unptitcurieux/my-httpd
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Run the proxy container
+  docker_container:
+    name: server-container
+    image: unptitcurieux/my-httpd
+    ports:
+      - "80:80"
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+The playbook executes each of the roles presented above. He installs Docker on the server, sets up a common network for each party and pulls the images from Docker Hub (the images are updated using Github Actions). Then it creates a container in the server for each image.
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/017095d4-27a8-4b88-ad74-97aaf21f233f)
+
+### **Front**
+
+We finish by installing a frontend to our application. To do this, we modify our files :
+
+- In the docker-compose, we add :
+
+```
+frontend:
+    build:
+        context: ./devops-front-main
+    ports:
+        - "8080:80"
+    networks:
+        - my-network
+    depends_on:
+        - httpd
+    container_name : frontend-container
+```
+
+- we change the devops-front-main/src/.env.production for a distant connection :
+
+```
+VUE_APP_API_URL=benjamin.mancel.takima.cloud:80
+```
+
+- we add a frontend role with inside (to pull the new image and create the frontend container) :
+
+```
+- name: Pull the frontend image
+  docker_image:
+    name: unptitcurieux/my-frontend
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Run the frontend container
+  docker_container:
+    name: frontend-container
+    image: unptitcurieux/my-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+```
+
+- we want the playbook to check the new role :
+
+```
+- hosts: all
+  gather_facts: false
+  become: true
+  roles:
+  - docker
+  - network
+  - database
+  - app
+  - proxy
+  - frontend
+```
+
+Once this is done, we can run the playbook in the server.
+
+If everything works correctly, I get this presentation at http://benjamin.mancel.takima.cloud:8080 :
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/8e64a414-0fbe-44d7-826a-88b43f47eaef)
+
 
 
