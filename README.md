@@ -866,5 +866,46 @@ If everything works correctly, I get this presentation at http://benjamin.mancel
 
 ![image](https://github.com/BMancel/DevOps/assets/150273847/8e64a414-0fbe-44d7-826a-88b43f47eaef)
 
+### **Continuous Deployment**
+
+To deploy my application, I created a third job in the workflow which sets up an ssh connection and launches the playbook.
+
+Here is my workflow :
+
+```
+name: Deployment
+ 
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    types:
+      - completed
+    branches: main
+ 
+jobs:
+  ansible-setup:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.5.0
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H benjamin.mancel.takima.cloud >> ~/.ssh/known_hosts
+        shell: bash
+
+      - name: Install Ansible
+        run: sudo apt install -y ansible
+
+      - name: Run playbook
+        run: ansible-playbook -i Ansible/inventories/setup.yml Ansible/playbook.yml
+```
+
+![image](https://github.com/BMancel/DevOps/assets/150273847/131c0213-84a6-4ffe-94b3-a9fbed85ddf8)
+
 
 
