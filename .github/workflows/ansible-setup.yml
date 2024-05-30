@@ -17,9 +17,6 @@ jobs:
 
       - name: Install Ansible
         run: sudo apt install -y ansible
-      
-      - name: Rights
-        run: chmod 400 ${{ secrets.ANSIBLE_KEY }}
 
       - name: Go to the correct directory
         run: cd repo/Ansible
@@ -27,4 +24,5 @@ jobs:
       - name: Run playbook
         run: ansible-playbook -i inventories/setup.yml playbook.yml
 
- 
+      - name: SSH connection
+        run: ssh -i ${{ secrets.ANSIBLE_KEY } centos@benjamin.mancel.takima.cloud
