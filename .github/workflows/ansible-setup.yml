@@ -20,6 +20,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H benjamin.mancel.takima.cloud >> ~/.ssh/known_hosts
         shell: bash
 
       - name: Install Ansible
