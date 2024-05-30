@@ -25,4 +25,4 @@ jobs:
         run: ansible-playbook -i inventories/setup.yml playbook.yml
 
       - name: SSH connection
-        run: ssh -i ${{ secrets.ANSIBLE_KEY } centos@benjamin.mancel.takima.cloud
+        run: ssh -i ${{ secrets.ANSIBLE_KEY }} centos@benjamin.mancel.takima.cloud
