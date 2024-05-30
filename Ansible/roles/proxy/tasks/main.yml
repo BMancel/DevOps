@@ -1,0 +1,21 @@
+---
+# tasks file for roles/proxy
+
+- name: Pull the proxy image
+  docker_image:
+    name: unptitcurieux/my-httpd
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Run the proxy container
+  docker_container:
+    name: server-container
+    image: unptitcurieux/my-httpd
+    ports:
+      - "80:80"
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

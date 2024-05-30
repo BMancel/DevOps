@@ -1,0 +1,19 @@
+---
+# tasks file for roles/database
+
+- name: Pull the database image
+  docker_image:
+    name: unptitcurieux/my-database
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+ 
+- name: Run the database
+  docker_container:
+    name: database-container
+    image: unptitcurieux/my-database
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

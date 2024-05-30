@@ -1,0 +1,21 @@
+---
+# tasks file for roles/frontend
+
+- name: Pull the frontend image
+  docker_image:
+    name: unptitcurieux/my-frontend
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Run the frontend container
+  docker_container:
+    name: frontend-container
+    image: unptitcurieux/my-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

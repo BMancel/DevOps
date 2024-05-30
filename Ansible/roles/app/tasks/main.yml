@@ -1,0 +1,19 @@
+---
+# tasks file for roles/app
+
+- name: Pull the backend image
+  docker_image:
+    name: unptitcurieux/my-backend
+    tag: latest
+    source: pull
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: Run the backend
+  docker_container:
+    name: backend-container
+    image: unptitcurieux/my-backend
+    networks:
+      - name: "my-network"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
