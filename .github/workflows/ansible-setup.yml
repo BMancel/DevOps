@@ -15,8 +15,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2.5.0
 
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+        shell: bash
+
       - name: Install Ansible
         run: sudo apt install -y ansible
 
       - name: Run playbook
         run: ansible-playbook -i Ansible/inventories/setup.yml Ansible/playbook.yml
+        env:
+          ANSIBLE_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
